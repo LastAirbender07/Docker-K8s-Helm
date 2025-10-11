@@ -16,11 +16,11 @@ class User(Base):
 
 
 class TaskType(enum.Enum):
-    PERSONAL = "personal"
-    WORK = "work"
-    STUDY = "study"
-    HOBBY = "hobby"
-    OTHER = "other"
+    PERSONAL = "PERSONAL"
+    WORK = "WORD"
+    STUDY = "STUDY"
+    HOBBY = "HOBBY"
+    OTHER = "OTHER"
 
 class Task(Base):
     __tablename__ = "tasks"

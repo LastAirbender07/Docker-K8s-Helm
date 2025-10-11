@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from . import database, crud, models, schemas
 
@@ -25,7 +25,12 @@ def create_task(username: str, task: schemas.TaskCreate, db: Session = Depends(d
 
 # PATCH /api/users/{username}/tasks/{task_id}
 @router.patch("/{username}/tasks/{task_id}", response_model=schemas.TaskOut)
-def update_task(username: str, task_id: int, task_update: schemas.TaskUpdate, db: Session = Depends(database.get_db)):
+def update_task(
+    username: str,
+    task_id: int,
+    task_update: schemas.TaskUpdate = Body(...),
+    db: Session = Depends(database.get_db),
+):
     get_user_id_by_username(username, db)  # validate user exists
     updated_task = crud.update_task(db, task_id, task_update)
     if not updated_task:

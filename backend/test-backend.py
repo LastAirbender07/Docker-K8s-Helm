@@ -85,7 +85,7 @@ if task_list:
 print("5. UPDATE FIRST TASK (completed=True, progress=100)")
 r = requests.patch(
     f"{BASE_URL}/api/users/{user['username']}/tasks/{first_task_id}",
-    json={"completed": True, "progress": 100}
+    json={"completed": True, "progress": 100, "type": "HOBBY"}
 )
 print_response(r)
 

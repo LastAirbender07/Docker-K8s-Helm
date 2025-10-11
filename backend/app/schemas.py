@@ -45,12 +45,12 @@ class TaskCreate(TaskBase):
     pass
 
 class TaskUpdate(BaseModel):
-    title: Optional[str]
-    description: Optional[str]
-    completed: Optional[bool]
-    progress: Optional[float]
-    due_date: Optional[datetime]
-    type: Optional[TaskType]
+    title: Optional[str] = None
+    description: Optional[str] = None
+    completed: Optional[bool] = None
+    progress: Optional[float] = None
+    due_date: Optional[datetime] = None
+    type: Optional[TaskType] = None
 
 class TaskOut(TaskBase):
     id: int
