@@ -1,0 +1,37 @@
+version: "3.9"
+services:
+  postgres-service:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis-service:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend:
+    # build: . # Uncomment this line to build from Dockerfile in the current directory
+    image: jayaraj0781/tasktracker-backend:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+      POSTGRES_HOST: postgres-service
+      POSTGRES_PORT: 5432
+      REDIS_HOST: redis-service
+      REDIS_PORT: 6379
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres-service
+      - redis-service
+
+volumes:
+  pgdata:
