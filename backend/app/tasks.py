@@ -21,13 +21,13 @@ def list_tasks(username: str, db: Session = Depends(database.get_db)):
 @router.post("/{username}/tasks", response_model=schemas.TaskOut)
 def create_task(username: str, task: schemas.TaskCreate, db: Session = Depends(database.get_db)):
     user_id = get_user_id_by_username(username, db)
-    return crud.create_task(db, user_id, task.title)
+    return crud.create_task(db, user_id, task)
 
 # PATCH /api/users/{username}/tasks/{task_id}
 @router.patch("/{username}/tasks/{task_id}", response_model=schemas.TaskOut)
 def update_task(username: str, task_id: int, task_update: schemas.TaskUpdate, db: Session = Depends(database.get_db)):
     get_user_id_by_username(username, db)  # validate user exists
-    updated_task = crud.update_task(db, task_id, task_update.completed)
+    updated_task = crud.update_task(db, task_id, task_update)
     if not updated_task:
         raise HTTPException(status_code=404, detail="Task not found")
     return updated_task

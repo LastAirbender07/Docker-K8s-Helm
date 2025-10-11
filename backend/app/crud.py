@@ -17,8 +17,15 @@ def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
 # Create Task
-def create_task(db: Session, user_id: int, title: str):
-    task = models.Task(title=title, user_id=user_id)
+def create_task(db: Session, user_id: int, task_data: schemas.TaskCreate):
+    task = models.Task(
+        title=task_data.title,
+        description=task_data.description,
+        progress=task_data.progress,
+        due_date=task_data.due_date,
+        type=task_data.type,
+        user_id=user_id
+    )
     db.add(task)
     db.commit()
     db.refresh(task)
@@ -29,10 +36,11 @@ def get_tasks(db: Session, user_id: int):
     return db.query(models.Task).filter(models.Task.user_id == user_id).all()
 
 # Update task
-def update_task(db: Session, task_id: int, completed: bool):
+def update_task(db: Session, task_id: int, task_update: schemas.TaskUpdate):
     task = db.query(models.Task).filter(models.Task.id == task_id).first()
     if task:
-        task.completed = completed
+        for attr, value in task_update.dict(exclude_unset=True).items():
+            setattr(task, attr, value)
         db.commit()
         db.refresh(task)
     return task
