@@ -1,4 +1,5 @@
 import requests
+from datetime import datetime, timedelta
 
 BASE_URL = "http://localhost:5001"
 
@@ -12,8 +13,23 @@ user = {
     "gender": "male"
 }
 
-task1 = {"title": "Learn Docker"}
-task2 = {"title": "Learn Kubernetes"}
+# tasks
+task1 = {
+    "title": "Learn Docker",
+    "description": "I'm learning Docker",
+    "progress": 0,
+    "due_date": (datetime.now() + timedelta(days=7)).isoformat(),
+    "type": "STUDY"
+}
+
+task2 = {
+    "title": "Learn Kubernetes",
+    "description": "hi",
+    "progress": 0,
+    "due_date": (datetime.now() + timedelta(days=14)).isoformat(),
+    "type": "STUDY"
+}
+
 
 # -----------------------------
 # Helper functions
@@ -59,19 +75,24 @@ print_response(r)
 task_list = r.json()
 if task_list:
     first_task_id = task_list[0]["id"]
+    second_task_id = task_list[1]["id"]
+
+    print(first_task_id, second_task_id)
 
 # -----------------------------
 # Update Task (PATCH)
 # -----------------------------
-print("5. UPDATE FIRST TASK (completed=True)")
-r = requests.patch(f"{BASE_URL}/api/users/{user['username']}/tasks/{first_task_id}", json={"completed": True})
+print("5. UPDATE FIRST TASK (completed=True, progress=100)")
+r = requests.patch(
+    f"{BASE_URL}/api/users/{user['username']}/tasks/{first_task_id}",
+    json={"completed": True, "progress": 100}
+)
 print_response(r)
 
 # -----------------------------
 # Delete Task
 # -----------------------------
 print("6. DELETE SECOND TASK")
-second_task_id = task_list[1]["id"]
 r = requests.delete(f"{BASE_URL}/api/users/{user['username']}/tasks/{second_task_id}")
 print_response(r)
 

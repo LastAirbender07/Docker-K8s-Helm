@@ -18,14 +18,17 @@ def get_user_by_username(db: Session, username: str):
 
 # Create Task
 def create_task(db: Session, user_id: int, task_data: schemas.TaskCreate):
+    task_type = task_data.type.value.upper() if task_data.type else "OTHER"
+
     task = models.Task(
         title=task_data.title,
-        description=task_data.description,
-        progress=task_data.progress,
-        due_date=task_data.due_date,
-        type=task_data.type,
+        description=task_data.description,  # can be None
+        progress=task_data.progress or 0.0, # default 0 if None
+        due_date=task_data.due_date,        # can be None
+        type=task_type,
         user_id=user_id
     )
+
     db.add(task)
     db.commit()
     db.refresh(task)

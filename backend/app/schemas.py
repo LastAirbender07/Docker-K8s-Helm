@@ -27,11 +27,12 @@ class UserOut(BaseModel):
 #### Task Schemas
 
 class TaskType(str, Enum):
-    PERSONAL = "personal"
-    WORK = "work"
-    STUDY = "study"
-    HOBBY = "hobby"
-    OTHER = "other"
+    PERSONAL = "PERSONAL"
+    WORK = "WORK"
+    STUDY = "STUDY"
+    HOBBY = "HOBBY"
+    OTHER = "OTHER"
+
 
 class TaskBase(BaseModel):
     title: str
