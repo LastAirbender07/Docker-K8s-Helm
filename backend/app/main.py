@@ -10,6 +10,14 @@ app = FastAPI(title="FastAPI Backend")
 app.include_router(auth_router)
 app.include_router(tasks_router)
 
+@app.get("/")
+def index():
+    return {"message": "Welcome to the FastAPI Backend"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 # @app.get("/api/users")
 # def list_users(db=Depends(database.get_db)):
 #     return db.query(models.User).all()
