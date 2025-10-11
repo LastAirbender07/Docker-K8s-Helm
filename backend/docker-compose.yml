@@ -16,7 +16,7 @@ services:
       - "6379:6379"
 
   backend:
-    # build: . # Uncomment this line to build from Dockerfile in the current directory
+    build: . # Uncomment this line to build from Dockerfile in the current directory
     image: jayaraj0781/tasktracker-backend:latest
     environment:
       POSTGRES_USER: postgres
