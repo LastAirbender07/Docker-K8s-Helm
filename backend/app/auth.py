@@ -50,14 +50,16 @@ def login(data: schemas.UserLogin, db: Session = Depends(database.get_db)):
         # Cache in Redis
         r.set(f"user:{data.username}", json.dumps(user), ex=CACHE_TTL)
 
+    # Validate password
     hashed_pw = hashlib.sha256(data.password.encode()).hexdigest()
-    if user.password != hashed_pw:
+    if user["password"] != hashed_pw:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    # store session in Redis
-    session_key = f"session:{user.username}"
+    # Store session in Redis
+    session_key = f"session:{user['username']}"
     r.set(session_key, "logged_in", ex=3600)  # expire in 1 hr
-    return {"username": user.username, "email": user.email, "gender": user.gender}
+
+    return {"username": user["username"], "email": user["email"], "gender": user["gender"]}
 
 @router.post("/logout")
 def logout(username: str):
