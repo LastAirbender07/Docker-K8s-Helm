@@ -32,6 +32,7 @@ const TaskModal = ({
   overlayClass = "bg-black/20 backdrop-blur-sm",
 }) => {
   const [formData, setFormData] = useState({
+    id: null,
     title: "",
     description: "",
     type: "OTHER",
@@ -43,6 +44,7 @@ const TaskModal = ({
   useEffect(() => {
     if (task) {
       setFormData({
+        id: task.id,
         title: task.title || "",
         description: task.description || "",
         type: task.type || "OTHER",
@@ -52,6 +54,7 @@ const TaskModal = ({
       });
     } else {
       setFormData({
+        id: null,
         title: "",
         description: "",
         type: "OTHER",
