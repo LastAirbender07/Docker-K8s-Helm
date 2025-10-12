@@ -74,7 +74,7 @@ const HomePage = () => {
 
   const handleAddTask = async (task) => {
     try {
-      await addTask({ ...task, username: user.username });
+      await addTask(user.username, task);
       toast.success("Task added successfully");
       setModalVisible(false);
       loadTasks();
@@ -85,7 +85,7 @@ const HomePage = () => {
 
   const handleUpdateTask = async (task) => {
     try {
-      await updateTask(task.id, task);
+      await updateTask(user.username, task.id, task);
       toast.success("Task updated successfully");
       setModalVisible(false);
       loadTasks();
@@ -96,7 +96,7 @@ const HomePage = () => {
 
   const handleDeleteTask = async () => {
     try {
-      await deleteTask(taskToDelete.id);
+      await deleteTask(user.username, taskToDelete.id);
       toast.success("Task deleted successfully");
       setConfirmVisible(false);
       loadTasks();
