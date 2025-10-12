@@ -1,5 +1,7 @@
-const BASE_URL = import.meta.env.BACKEND_API_URL || "http://localhost:5001"; // match your docker port
-console.log("Environment Variable:", import.meta.env.BACKEND_API_URL);
+// const BASE_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5001"; // match your docker port
+
+const BASE_URL = window.__BACKEND_API_URL__ || "http://localhost:5001"; // default fallback
+console.log("Environment Variable:", import.meta.env.BACKEND_API_URL, import.meta.env.VITE_BACKEND_API_URL, window.__BACKEND_API_URL__);
 console.log("API URL:", BASE_URL);
 
 export const API_URLS = {
@@ -9,8 +11,9 @@ export const API_URLS = {
   LOGOUT: `${BASE_URL}/auth/logout`,
 
   // Users / Tasks
-  GET_USERS: `${BASE_URL}/api/users`, // For fetching user tasks: GET /api/users/{username}/tasks
-  CREATE_TASK: `${BASE_URL}/api/users`, // POST /api/users/{username}/tasks
-  UPDATE_TASK: `${BASE_URL}/api/users`, // PATCH /api/users/{username}/tasks/{task_id}
-  DELETE_TASK: `${BASE_URL}/api/users`, // DELETE /api/users/{username}/tasks/{task_id}
+  GET_TASKS: (username) => `${BASE_URL}/api/users/${username}/tasks`,
+  ADD_TASK: (username) => `${BASE_URL}/api/users/${username}/tasks`,
+  UPDATE_TASK: (username, taskId) => `${BASE_URL}/api/users/${username}/tasks/${taskId}`,
+  DELETE_TASK: (username, taskId) => `${BASE_URL}/api/users/${username}/tasks/${taskId}`,
 };
+
