@@ -58,7 +58,7 @@ services:
     ports:
       - "5173:80"
     environment:
-      - BACKEND_API_URL=http://backend:5001
+      - BACKEND_API_URL=http://localhost:5001 # for local testing purpose, when deployed in k8s use: http://<service-name>:<port>
     depends_on:
       - backend
     networks:
