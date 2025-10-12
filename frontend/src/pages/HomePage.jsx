@@ -54,13 +54,13 @@ const HomePage = () => {
 
   const loadTasks = async () => {
     try {
-      // if (user?.username) {
-      //   const data = await getTasks(user.username);
-      //   const validTasks = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [];
-      //   setTasks(validTasks);
-      // } else {
+      if (user?.username) {
+        const data = await getTasks(user.username);
+        const validTasks = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [];
+        setTasks(validTasks);
+      } else {
       setTasks(dummyTasks);
-      // }
+      }
     } catch (error) {
       console.error("Error loading tasks:", error);
       toast.error("Failed to load tasks, loading sample data.");

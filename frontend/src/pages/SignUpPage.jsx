@@ -7,8 +7,6 @@ import { API_URLS } from "../apiUrls";
 import axios from "axios";
 import { sha256 } from "js-sha256";
 
-// TO DO: Radio button not wokring properly
-
 const SignUpPage = () => {
   const [signUpData, setSignUpData] = useState({
     username: "",
@@ -50,7 +48,8 @@ const SignUpPage = () => {
       navigate("/login");
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.detail || "Registration failed");
+      toast.error(err.response?.data?.detail);
+      toast.error("Registration failed.");
     } finally {
       setLoading(false);
     }
