@@ -38,10 +38,10 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const hashedPassword = sha256(password);
-      // const response = await axios.post(API_URLS.LOGIN, { username, password: hashedPassword });
+      const response = await axios.post(API_URLS.LOGIN, { username, password: hashedPassword });
 
       // testing response data
-      const response = { data: { username, email: "test@example.com", gender: "male" } };
+      // const response = { data: { username, email: "test@example.com", gender: "male" } };
 
       dispatch(setUser(response.data));
       toast.success("Login successful");

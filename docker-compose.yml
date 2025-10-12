@@ -14,6 +14,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - app-network
 
   redis-service:
     image: redis:7-alpine
@@ -24,9 +26,12 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    networks:
+      - app-network
 
   backend:
-    build: . # Uncomment if you want to build locally
+    # build: ./backend # Uncomment this line if you want to build from local Dockerfile
+    # container_name: tasktracker-backend
     image: jayaraj0781/tasktracker-backend:latest
     environment:
       POSTGRES_USER: postgres
@@ -43,6 +48,25 @@ services:
         condition: service_healthy
       redis-service:
         condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    # build: ./frontend # Uncomment this line if you want to build from local Dockerfile
+    # container_name: tasktracker-frontend
+    image: jayaraj0781/tasktracker-frontend:latest
+    ports:
+      - "5173:80"
+    environment:
+      - BACKEND_API_URL=http://backend:5001
+    depends_on:
+      - backend
+    networks:
+      - app-network
 
 volumes:
   pgdata:
+
+networks:
+  app-network:
+    driver: bridge
