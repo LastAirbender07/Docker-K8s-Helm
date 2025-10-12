@@ -1,4 +1,5 @@
 const BASE_URL = import.meta.env.BACKEND_API_URL || "http://localhost:5001"; // match your docker port
+console.log("Environment Variable:", import.meta.env.BACKEND_API_URL);
 console.log("API URL:", BASE_URL);
 
 export const API_URLS = {
