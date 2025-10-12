@@ -1,291 +1,173 @@
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUser } from "../reducers/userSlice";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { API_URLS } from "../apiUrls";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
+import Header from "../components/Header";
+import TaskCard from "../components/TaskCard";
+import TaskModal from "../components/TaskModal";
+import ConfirmDialog from "../components/ConfirmDialog";
+import {
+  getTasks,
+  addTask,
+  updateTask,
+  deleteTask,
+} from "../services/taskService";
 
-import InputField from "../components/InputField";
-import RadioButton from "../components/RadioButton";
-
-const taskTypes = ["PERSONAL", "WORK", "STUDY", "HOBBY", "OTHER"];
-
-// TO DO: Change UI Layout
+// ✅ Dummy tasks for testing UI
+const dummyTasks = [
+  {
+    id: 1,
+    title: "Finish project documentation",
+    description: "Prepare the full README for deployment",
+    type: "WORK",
+    due_date: "2025-10-15",
+    progress: 75,
+  },
+  {
+    id: 2,
+    // Very big Title to test overflow handling
+    title:
+      "Grocery Shopping for the week including some extra items for the weekend party",
+    description: "Buy fruits, milk, and cleaning supplies",
+    type: "PERSONAL",
+    due_date: "2025-10-14",
+    progress: 20,
+  },
+  {
+    id: 3,
+    title: "Read 'Atomic Habits'",
+    // Need a realy very long valid description to test overflow handling in the task card component. This should ideally be a few sentences long to see how the UI manages larger text blocks without breaking the layout or causing overflow issues.
+    description:
+      "Atomic Habits by James Clear is a comprehensive guide on how to build good habits and break bad ones. The book delves into the science of habit formation, providing practical strategies for making small changes that lead to significant improvements over time. Clear emphasizes the importance of focusing on systems rather than goals, suggesting that by optimizing our daily routines, we can achieve lasting success. The book is filled with real-life examples and actionable advice, making it a valuable resource for anyone looking to improve their life through better habits.",
+    type: "STUDY",
+    due_date: "2025-10-20",
+    progress: 40,
+  },
+];
 
 const HomePage = () => {
   const user = useSelector((state) => state.user.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
-  const [newTask, setNewTask] = useState({
-    title: "",
-    description: "",
-    type: "OTHER",
-    due_date: "",
-  });
-
-  const [editingTaskId, setEditingTaskId] = useState(null);
-  const [editingTask, setEditingTask] = useState({});
-
-  // Fetch tasks
-  const fetchTasks = async () => {
-    if (!user?.username) return;
+  const loadTasks = async () => {
     try {
-      const res = await axios.get(`${API_URLS.GET_USERS}/${user.username}/tasks`);
-      setTasks(res.data);
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to fetch tasks");
+      // if (user?.username) {
+      //   const data = await getTasks(user.username);
+      //   const validTasks = Array.isArray(data) ? data : Array.isArray(data?.tasks) ? data.tasks : [];
+      //   setTasks(validTasks);
+      // } else {
+      setTasks(dummyTasks);
+      // }
+    } catch (error) {
+      console.error("Error loading tasks:", error);
+      toast.error("Failed to load tasks, loading sample data.");
+      setTasks(dummyTasks);
     }
   };
 
   useEffect(() => {
-    fetchTasks();
+    loadTasks();
   }, [user]);
 
-  // Add new task
-  const handleAddTask = async (e) => {
-    e.preventDefault();
-    if (!newTask.title.trim()) return toast.error("Title cannot be empty");
-
-    setLoading(true);
+  const handleAddTask = async (task) => {
     try {
-      await axios.post(`${API_URLS.GET_USERS}/${user.username}/tasks`, newTask);
-      setNewTask({ title: "", description: "", type: "OTHER", due_date: "" });
-      fetchTasks();
-      toast.success("Task added");
-    } catch (err) {
-      console.error(err);
+      await addTask({ ...task, username: user.username });
+      toast.success("Task added successfully");
+      setModalVisible(false);
+      loadTasks();
+    } catch {
       toast.error("Failed to add task");
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Delete task
-  const handleDeleteTask = async (taskId) => {
+  const handleUpdateTask = async (task) => {
     try {
-      await axios.delete(`${API_URLS.GET_USERS}/${user.username}/tasks/${taskId}`);
-      fetchTasks();
-      toast.success("Task deleted");
-    } catch (err) {
-      console.error(err);
+      await updateTask(task.id, task);
+      toast.success("Task updated successfully");
+      setModalVisible(false);
+      loadTasks();
+    } catch {
+      toast.error("Failed to update task");
+    }
+  };
+
+  const handleDeleteTask = async () => {
+    try {
+      await deleteTask(taskToDelete.id);
+      toast.success("Task deleted successfully");
+      setConfirmVisible(false);
+      loadTasks();
+    } catch {
       toast.error("Failed to delete task");
     }
   };
 
-  // Toggle completed
-  const handleToggleTask = async (task) => {
-    try {
-      await axios.patch(`${API_URLS.GET_USERS}/${user.username}/tasks/${task.id}`, {
-        completed: !task.completed,
-      });
-      fetchTasks();
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update task");
-    }
-  };
-
-  // Start editing a task
-  const startEditTask = (task) => {
-    setEditingTaskId(task.id);
-    setEditingTask({
-      title: task.title,
-      description: task.description || "",
-      type: task.type || "OTHER",
-      due_date: task.due_date ? task.due_date.split("T")[0] : "",
-      completed: task.completed,
-    });
-  };
-
-  // Save edited task
-  const saveTask = async (taskId) => {
-    try {
-      await axios.patch(`${API_URLS.GET_USERS}/${user.username}/tasks/${taskId}`, editingTask);
-      setEditingTaskId(null);
-      setEditingTask({});
-      fetchTasks();
-      toast.success("Task updated");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to update task");
-    }
-  };
-
-  // Logout
-  const handleLogout = async () => {
-    try {
-      await axios.post(API_URLS.LOGOUT, null, { withCredentials: true });
-    } catch {}
-    dispatch(clearUser());
-    toast.success("Signed out successfully");
-    navigate("/login");
-  };
-
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center bg-white p-4 rounded shadow">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">
-            Welcome, {user?.username || "User"} 👋
-          </h1>
-          <p className="text-gray-500">{user?.email}</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition"
-        >
-          Sign Out
-        </button>
-      </div>
+    <div className="flex flex-col h-screen">
+      <Header
+        onAddClick={() => {
+          setSelectedTask(null);
+          setModalVisible(true);
+        }}
+      />
 
-      {/* Add Task */}
-      <div className="mt-8 bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
-        <form onSubmit={handleAddTask} className="space-y-2">
-          <InputField
-            label="Title"
-            value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-            required
-          />
-          <InputField
-            label="Description"
-            value={newTask.description}
-            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-          />
-          <div className="flex gap-2 items-center">
-            <span className="font-semibold">Type:</span>
-            {taskTypes.map((type) => (
-              <RadioButton
-                key={type}
-                label={type}
-                name="taskType"
-                value={type}
-                checked={newTask.type === type}
-                onChange={() => setNewTask({ ...newTask, type })}
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+        {Array.isArray(tasks) && tasks.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onEdit={(t) => {
+                  setSelectedTask(t);
+                  setModalVisible(true);
+                }}
+                onDelete={(t) => {
+                  setTaskToDelete(t);
+                  setConfirmVisible(true);
+                }}
               />
             ))}
           </div>
-          <InputField
-            label="Due Date"
-            type="date"
-            value={newTask.due_date}
-            onChange={(e) => setNewTask({ ...newTask, due_date: e.target.value })}
-          />
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading ? "Adding..." : "Add Task"}
-          </button>
-        </form>
-      </div>
-
-      {/* Task List */}
-      <div className="mt-8 bg-white p-6 rounded shadow">
-        <h2 className="text-xl font-semibold mb-4">Your Tasks</h2>
-        {tasks.length === 0 ? (
-          <p className="text-gray-500">No tasks yet.</p>
         ) : (
-          <ul className="space-y-4">
-            {tasks.map((task) => (
-              <li key={task.id} className="border p-4 rounded-md flex justify-between items-start">
-                {editingTaskId === task.id ? (
-                  <div className="flex-1 space-y-2">
-                    <InputField
-                      label="Title"
-                      value={editingTask.title}
-                      onChange={(e) => setEditingTask({ ...editingTask, title: e.target.value })}
-                    />
-                    <InputField
-                      label="Description"
-                      value={editingTask.description}
-                      onChange={(e) =>
-                        setEditingTask({ ...editingTask, description: e.target.value })
-                      }
-                    />
-                    <div className="flex gap-2 items-center">
-                      <span className="font-semibold">Type:</span>
-                      {taskTypes.map((type) => (
-                        <RadioButton
-                          key={type}
-                          label={type}
-                          name={`editType-${task.id}`}
-                          value={type}
-                          checked={editingTask.type === type}
-                          onChange={() => setEditingTask({ ...editingTask, type })}
-                        />
-                      ))}
-                    </div>
-                    <InputField
-                      label="Due Date"
-                      type="date"
-                      value={editingTask.due_date}
-                      onChange={(e) => setEditingTask({ ...editingTask, due_date: e.target.value })}
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => saveTask(task.id)}
-                        className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => setEditingTaskId(null)}
-                        className="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex-1">
-                    <h3
-                      onClick={() => handleToggleTask(task)}
-                      className={`cursor-pointer font-semibold ${
-                        task.completed ? "line-through text-gray-500" : ""
-                      }`}
-                    >
-                      {task.title}
-                    </h3>
-                    {task.description && <p className="text-gray-500">{task.description}</p>}
-                    <p className="text-sm text-gray-400">Type: {task.type}</p>
-                    {task.due_date && (
-                      <p className="text-sm text-gray-400">
-                        Due: {new Date(task.due_date).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <div className="flex flex-col gap-2 ml-4">
-                  {editingTaskId !== task.id && (
-                    <button
-                      onClick={() => startEditTask(task)}
-                      className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                    >
-                      Edit
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDeleteTask(task.id)}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed rounded-md text-center text-gray-600">
+            <p className="mb-2 font-medium">No tasks are present here.</p>
+            <p className="mb-4 text-sm">Add tasks to track them here.</p>
+            <button
+              onClick={() => {
+                setSelectedTask(null);
+                setModalVisible(true);
+              }}
+              className="px-4 py-2 cursor-pointer bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Add Task
+            </button>
+          </div>
         )}
       </div>
+
+      <TaskModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={selectedTask ? handleUpdateTask : handleAddTask}
+        task={selectedTask}
+        overlayClass="bg-black/20 backdrop-blur-sm" // translucent overlay
+      />
+
+      <ConfirmDialog
+        visible={confirmVisible}
+        onCancel={() => setConfirmVisible(false)}
+        onConfirm={handleDeleteTask}
+        message="Are you sure you want to delete this task?"
+        overlayClass="bg-black/20 backdrop-blur-sm"
+      />
+
+      <footer className="text-gray-300 bg-white border-t">
+        <p className="p-3 text-center text-sm text-gray-500"> © 2025 Task Manager. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
