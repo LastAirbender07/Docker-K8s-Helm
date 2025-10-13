@@ -10,7 +10,8 @@ app = FastAPI(title="FastAPI Backend")
 
 origins = [
     "http://localhost:5173",  # for host dev testing
-    "http://frontend:80",      # from Docker container network
+    "http://frontend:80",     # from Docker container network
+    "http://task.local",      # for ingress
 ]
 
 app.add_middleware(
