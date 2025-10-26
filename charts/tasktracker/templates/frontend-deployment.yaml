@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tasktracker.fullname" . }}-frontend
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+    tier: frontend
+spec:
+  replicas: {{ .Values.frontend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "tasktracker.selectorLabels" . | nindent 6 }}
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        {{- include "tasktracker.selectorLabels" . | nindent 8 }}
+        tier: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "{{ .Values.image.frontend.repository }}:{{ .Values.image.frontend.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.frontend.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "tasktracker.fullname" . }}-frontend-config
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

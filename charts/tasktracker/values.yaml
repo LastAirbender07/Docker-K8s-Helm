@@ -1,5 +1,3 @@
-
-
 image:
   backend:
     repository: jayaraj0781/tasktracker-backend
@@ -14,7 +12,7 @@ backend:
   port: 5001 # exposed port in the container
   env:
     POSTGRES:
-      db-name: tasktracker-db
+      secretName: tasktracker-db
       db-user: POSTGRES_USER
       db-password: POSTGRES_PASSWORD
       db-database: POSTGRES_DB
@@ -38,11 +36,21 @@ frontend:
   replicaCount: 1
   port: 80
   host: task.local   # ingress host
+  service:
+    type: ClusterIP
+    port: 80 # service port - port used internally in k8s cluster
+    annotations: {}
 
 postgres:
   enabled: false   # this will reuse existing postgres instance
 
-resources: {}
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
 
 
 
