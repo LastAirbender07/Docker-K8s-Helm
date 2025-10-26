@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tasktracker.fullname" . }}-backend
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+    tier: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "tasktracker.selectorLabels" . | nindent 6 }}
+      tier: backend
+  template:
+    metadata:
+      labels:
+        {{- include "tasktracker.selectorLabels" . | nindent 8 }}
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.env.POSTGRES.db-name }}"
+                  key: "{{ .Values.backend.env.POSTGRES.db-user }}"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.env.POSTGRES.db-name }}"
+                  key: "{{ .Values.backend.env.POSTGRES.db-password }}"
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: "{{ .Values.backend.env.POSTGRES.db-name }}"
+                  key: "{{ .Values.backend.env.POSTGRES.db-database }}"
+            - name: POSTGRES_HOST
+              value: "{{ .Values.backend.env.POSTGRES_HOST }}"
+            - name: POSTGRES_PORT
+              value: "{{ .Values.backend.env.POSTGRES_PORT | quote }}"
+            - name: REDIS_HOST
+              value: "{{ .Values.backend.env.REDIS_HOST }}"
+            - name: REDIS_PORT
+              value: "{{ .Values.backend.env.REDIS_PORT | quote }}"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.port }}
+            initialDelaySeconds: {{ .Values.backend.livenessProbe.delay }}
+            periodSeconds: {{ .Values.backend.livenessProbe.period }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.port }}
+            initialDelaySeconds: {{ .Values.backend.readinessProbe.delay }}
+            periodSeconds: {{ .Values.backend.readinessProbe.period }}
