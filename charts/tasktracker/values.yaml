@@ -11,7 +11,7 @@ image:
 
 backend:
   replicaCount: 1
-  port: 5001
+  port: 5001 # exposed port in the container
   env:
     POSTGRES:
       db-name: tasktracker-db
@@ -29,6 +29,10 @@ backend:
   readinessProbe:
     delay: 5
     period: 5
+  service:
+    type: ClusterIP
+    port: 5001 # service port - port used internally in k8s cluster
+    annotations: {}
 
 frontend:
   replicaCount: 1
