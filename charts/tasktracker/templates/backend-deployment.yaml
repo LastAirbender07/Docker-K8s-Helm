@@ -27,26 +27,26 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.dbUser }}"
+                  name: {{ .Values.backend.env.POSTGRES.secretName }}
+                  key: {{ .Values.backend.env.POSTGRES.dbUser }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.dbPassword }}"
+                  name: {{ .Values.backend.env.POSTGRES.secretName }}
+                  key: {{ .Values.backend.env.POSTGRES.dbPassword }}
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.dbDatabase }}"
+                  name: {{ .Values.backend.env.POSTGRES.secretName }}
+                  key: {{ .Values.backend.env.POSTGRES.dbDatabase }}
             - name: POSTGRES_HOST
-              value: "{{ .Values.backend.env.POSTGRES_HOST }}"
+              value: {{ .Values.backend.env.POSTGRES.POSTGRES_HOST }}
             - name: POSTGRES_PORT
-              value: "{{ .Values.backend.env.POSTGRES_PORT | quote }}"
+              value: {{ .Values.backend.env.POSTGRES.POSTGRES_PORT | quote }}
             - name: REDIS_HOST
-              value: "{{ .Values.backend.env.REDIS_HOST }}"
+              value: {{ .Values.backend.env.REDIS.REDIS_HOST }}
             - name: REDIS_PORT
-              value: "{{ .Values.backend.env.REDIS_PORT | quote }}"
+              value: {{ .Values.backend.env.REDIS.REDIS_PORT | quote }}
           livenessProbe:
             httpGet:
               path: /health
