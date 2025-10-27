@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tasktracker.fullname" . }}-allow-frontend-to-backend
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "tasktracker.selectorLabels" . | nindent 6 }}
+      tier: backend
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tasktracker.selectorLabels" . | nindent 12 }}
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: {{ .Values.backend.port }}
+  policyTypes:
+    - Ingress

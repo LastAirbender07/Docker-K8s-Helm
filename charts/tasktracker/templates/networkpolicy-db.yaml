@@ -1,0 +1,45 @@
+# Allow backend -> Postgres
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tasktracker.fullname" . }}-allow-backend-to-postgres
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tasktracker.selectorLabels" . | nindent 12 }}
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: {{ .Values.backend.env.POSTGRES.POSTGRES_PORT }}
+  policyTypes:
+    - Ingress
+---
+# Allow backend -> Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "tasktracker.fullname" . }}-allow-backend-to-redis
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              {{- include "tasktracker.selectorLabels" . | nindent 12 }}
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: {{ .Values.backend.env.REDIS.REDIS_PORT }}
+  policyTypes:
+    - Ingress
