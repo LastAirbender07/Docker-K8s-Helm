@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "tasktracker.fullname" . }}-test-backend"
+  labels:
+    {{- include "tasktracker.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: backend-check
+      image: busybox
+      command: ['wget']
+      args: ['--spider', '{{ include "tasktracker.fullname" . }}-backend:{{ .Values.backend.port }}']
+  restartPolicy: Never
