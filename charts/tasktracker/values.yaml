@@ -13,9 +13,9 @@ backend:
   env:
     POSTGRES:
       secretName: tasktracker-db
-      db-user: POSTGRES_USER
-      db-password: POSTGRES_PASSWORD
-      db-database: POSTGRES_DB
+      dbUser: POSTGRES_USER
+      dbPassword: POSTGRES_PASSWORD
+      dbDatabase: POSTGRES_DB
       POSTGRES_HOST: task-postgres-postgresql   # bitnami default service name
       POSTGRES_PORT: 5432
     REDIS:

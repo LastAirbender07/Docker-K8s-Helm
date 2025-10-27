@@ -28,17 +28,17 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.db-user }}"
+                  key: "{{ .Values.backend.env.POSTGRES.dbUser }}"
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.db-password }}"
+                  key: "{{ .Values.backend.env.POSTGRES.dbPassword }}"
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
                   name: "{{ .Values.backend.env.POSTGRES.secretName }}"
-                  key: "{{ .Values.backend.env.POSTGRES.db-database }}"
+                  key: "{{ .Values.backend.env.POSTGRES.dbDatabase }}"
             - name: POSTGRES_HOST
               value: "{{ .Values.backend.env.POSTGRES_HOST }}"
             - name: POSTGRES_PORT
