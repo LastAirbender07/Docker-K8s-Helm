@@ -13,7 +13,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              {{- include "tasktracker.selectorLabels" . | nindent 12 }}
+              {{ include "tasktracker.selectorLabels" . | nindent 14 }}
               tier: frontend
       ports:
         - protocol: TCP

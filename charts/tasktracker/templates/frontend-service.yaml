@@ -17,5 +17,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "tasktracker.selectorLabels" . | nindent 6 }}
+    {{- include "tasktracker.selectorLabels" . | nindent 4 }}
     tier: frontend
