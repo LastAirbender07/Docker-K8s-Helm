@@ -44,6 +44,16 @@ frontend:
 postgres:
   enabled: false   # this will reuse existing postgres instance
 
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  tls: {} # or configure like below for HTTPS
+  # tls:
+  #   secretName: tasktracker-tls
+
+
 resources:
   requests:
     cpu: 100m
