@@ -9,9 +9,11 @@ models.Base.metadata.create_all(bind=database.engine)
 app = FastAPI(title="FastAPI Backend")
 
 origins = [
-    "http://localhost:5173",  # for host dev testing
-    "http://frontend:80",     # from Docker container network
-    "http://task.local",      # for ingress
+    "http://localhost:5173",
+    "http://frontend:80",
+    "http://tasktracker-frontend",
+    "http://tasktracker-frontend.tasktracker.svc.cluster.local",
+    "http://task.local",
 ]
 
 app.add_middleware(
