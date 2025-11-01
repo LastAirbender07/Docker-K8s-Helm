@@ -1,6 +1,7 @@
 // const BASE_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5001"; // match your docker port
 
-const BASE_URL = window.__BACKEND_API_URL__ || "http://localhost:5001"; // default fallback
+// const BASE_URL = window.__BACKEND_API_URL__ || "http://localhost:5001"; // default fallback
+const BASE_URL = "";
 console.log("Environment Variable:", import.meta.env.BACKEND_API_URL, import.meta.env.VITE_BACKEND_API_URL, window.__BACKEND_API_URL__);
 console.log("API URL:", BASE_URL);
 

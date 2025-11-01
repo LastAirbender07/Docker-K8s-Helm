@@ -17,6 +17,22 @@ spec:
     - host: {{ .Values.frontend.host | quote }}
       http:
         paths:
+          # Route API and Auth requests to the backend
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "tasktracker.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ include "tasktracker.fullname" . }}-backend
+                port:
+                  number: {{ .Values.backend.service.port }}
+          # Route all other requests to the frontend
           - path: /
             pathType: Prefix
             backend:
