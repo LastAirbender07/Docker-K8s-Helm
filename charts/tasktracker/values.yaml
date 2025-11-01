@@ -5,7 +5,7 @@ image:
   frontend:
     repository: jayaraj0781/tasktracker-frontend
     tag: "latest"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 backend:
   replicaCount: 1
