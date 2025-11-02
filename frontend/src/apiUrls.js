@@ -1,9 +1,15 @@
-// const BASE_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5001"; // match your docker port
-// const BASE_URL = window.__BACKEND_API_URL__ || "http://localhost:5001"; // default fallback
 console.log("Env Vars:", import.meta.env.BACKEND_API_URL, import.meta.env.VITE_BACKEND_API_URL, window.__BACKEND_API_URL__);
-
 const BASE_URL = "";
-console.log("API URL:", BASE_URL);
+if (window.__BACKEND_API_URL__) {
+  console.log("App is running on k8s cluster => that has set window.__BACKEND_API_URL__ as : ", window.__BACKEND_API_URL__);
+  console.log("Thus using proxy as '/' for backend calls");
+}
+else {
+  console.log("App is running locally => thus using local backend url");
+  BASE_URL = import.meta.env.VITE_BACKEND_API_URL || "http://localhost:5001"; // match your docker port
+}
+
+console.log("Final API URL:", BASE_URL);
 
 export const API_URLS = {
   // Authentication
