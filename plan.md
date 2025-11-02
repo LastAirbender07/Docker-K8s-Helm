@@ -3,7 +3,7 @@
 1. Build and push images to Docker Hub (frontend + backend).
 2. Create a Kubernetes namespace for the app in minikube.
 3. Create Kubernetes Secrets (DB credentials) and ConfigMaps (runtime config).
-4. Deploy Postgres & Redis using either (A) stable Helm charts (recommended) or (B) our own manifests + PVC — I’ll give both options (I recommend Bitnami/official charts for production-like behavior).
+4. Deploy Postgres & Redis using either stable Bitnami Helm charts.
 5. Deploy backend & frontend as Helm release (ClusterIP services) with env from secrets. Backend talks to Postgres/Redis (ClusterIP). Frontend is served by Nginx ∴ exposed via Ingress.
 6. Add NetworkPolicies so: frontend → backend allowed; backend → postgres/redis allowed; other traffic blocked.
 7. Enable minikube ingress & set /etc/hosts for local dev host.
@@ -11,7 +11,7 @@
 
 ---
 
-# BEFORE YOU START (pre-reqs)
+# Pre-requisite
 
 * Docker logged into Docker Hub (`docker login`).
 * Minikube + kubectl + helm installed.
@@ -22,8 +22,6 @@
 ---
 
 # 0 — Build & push images (if not already pushed)
-
-Replace `jayaraj0781` with your Docker Hub user / repo if different.
 
 Backend (from `backend/`):
 
@@ -43,7 +41,6 @@ docker build -t jayaraj0781/tasktracker-frontend:latest .
 docker push jayaraj0781/tasktracker-frontend:latest
 ```
 
-If minikube is configured to use its own docker daemon (optional), you can skip pushing and use local images. But pushing to Docker Hub is simplest and mirrors production.
 
 ---
 
@@ -63,7 +60,7 @@ minikube addons enable ingress
 kubectl get pods -n ingress-nginx
 ```
 
-(You’ll use an ingress to expose frontend.)
+(ingress to expose frontend.)
 
 Add a hosts entry so your browser can reach the ingress host:
 
@@ -78,7 +75,7 @@ Add a hosts entry so your browser can reach the ingress host:
 
 ---
 
-# 3 — Option A: Deploy Postgres & Redis via Helm (recommended)
+# 3 — Option Deploy Postgres & Redis via Helm 
 
 Using Bitnami charts (production-friendly): persistent PVCs, creds via Helm values.
 
@@ -113,13 +110,11 @@ helm install task-redis bitnami/redis \
 
 After this, services will be `task-postgres-postgresql` (or check `kubectl get svc -n tasktracker`) and `task-redis-master`.
 
-> NOTE: If you prefer to deploy your own Postgres manifest with a PVC, I can give that manifest. The Bitnami chart is safer and simpler.
-
 ---
 
 # 4 — Prepare Secrets and ConfigMaps for backend (Kubernetes secrets)
 
-We will store DB credentials as a Kubernetes Secret and pass them to backend as env vars.
+Store DB credentials as a Kubernetes Secret and pass them to backend as env vars.
 
 Create secret using the values you used for Postgres above:
 
@@ -273,11 +268,3 @@ http://task.local
 ```
 
 ---
-
-If you want, I’ll:
-
-* generate the full Helm chart files (all templates + `values.yaml`) ready to drop into `helm/tasktracker`, or
-* produce the exact `kubectl` manifests instead of using Helm, or
-* show how to wire cert-manager for TLS on ingress.
-
-Which of these would you like me to produce next?
