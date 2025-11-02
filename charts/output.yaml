@@ -1,0 +1,347 @@
+---
+# Source: tasktracker/templates/networkpolicy-backend.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tasktracker-allow-frontend-to-backend
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: tasktracker
+      app.kubernetes.io/instance: tasktracker
+      tier: backend
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              
+              app.kubernetes.io/name: tasktracker
+              app.kubernetes.io/instance: tasktracker
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 5001
+  policyTypes:
+    - Ingress
+---
+# Source: tasktracker/templates/networkpolicy-db.yaml
+# Allow backend -> Postgres
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tasktracker-allow-backend-to-postgres
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tasktracker
+              app.kubernetes.io/instance: tasktracker
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 5432
+  policyTypes:
+    - Ingress
+---
+# Source: tasktracker/templates/networkpolicy-db.yaml
+# Allow backend -> Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tasktracker-allow-backend-to-redis
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: tasktracker
+              app.kubernetes.io/instance: tasktracker
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 6379
+  policyTypes:
+    - Ingress
+---
+# Source: tasktracker/templates/frontend-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tasktracker-frontend-config
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  FRONTEND_BASE_URL: "http://task.local"
+  BACKEND_API_URL: "http://tasktracker-backend.default.svc.cluster.local:5001"
+---
+# Source: tasktracker/templates/backend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasktracker-backend
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    tier: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5001
+      targetPort: 5001
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    tier: backend
+---
+# Source: tasktracker/templates/frontend-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tasktracker-frontend
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    tier: frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    tier: frontend
+---
+# Source: tasktracker/templates/backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasktracker-backend
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tasktracker
+      app.kubernetes.io/instance: tasktracker
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tasktracker
+        app.kubernetes.io/instance: tasktracker
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: "jayaraj0781/tasktracker-backend:latest"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5001
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tasktracker-db
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: tasktracker-db
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: tasktracker-db
+                  key: POSTGRES_DB
+            - name: POSTGRES_HOST
+              value: task-postgres-postgresql
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: REDIS_HOST
+              value: task-redis-master
+            - name: REDIS_PORT
+              value: "6379"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 5
+            periodSeconds: 5
+---
+# Source: tasktracker/templates/frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasktracker-frontend
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tasktracker
+      app.kubernetes.io/instance: tasktracker
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tasktracker
+        app.kubernetes.io/instance: tasktracker
+        tier: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "jayaraj0781/tasktracker-frontend:latest"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+            - configMapRef:
+                name: tasktracker-frontend-config
+          resources:
+            limits:
+              cpu: 250m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+---
+# Source: tasktracker/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tasktracker-ingress
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "task.local"
+      http:
+        paths:
+          # Route API and Auth requests to the backend
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: tasktracker-backend
+                port:
+                  number: 5001
+          - path: /auth
+            pathType: Prefix
+            backend:
+              service:
+                name: tasktracker-backend
+                port:
+                  number: 5001
+          # Route all other requests to the frontend
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tasktracker-frontend
+                port:
+                  number: 80
+---
+# Source: tasktracker/templates/tests/test-backend-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "tasktracker-test-backend"
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: backend-check
+      image: busybox
+      command: ['wget']
+      args: ['--spider', 'tasktracker-backend:5001']
+  restartPolicy: Never
+---
+# Source: tasktracker/templates/tests/test-frontend-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "tasktracker-test-frontend"
+  labels:
+    helm.sh/chart: tasktracker-0.1.0
+    app.kubernetes.io/name: tasktracker
+    app.kubernetes.io/instance: tasktracker
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: frontend-check
+      image: busybox
+      command: ['wget']
+      args: ['--spider', 'tasktracker-frontend:80']
+  restartPolicy: Never
